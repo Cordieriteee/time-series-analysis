@@ -1,0 +1,65 @@
+---
+title: "project"
+author: "Yuran Liao"
+date: "2025-02-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, dev="httpgd", fig.show="hold")
+```
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+#read the data
+file = read.csv("us-counties.csv")
+``` 
+
+```{r}
+#display the data
+tail(file)
+file$date <- as.Date(file$date)
+```
+
+```{r}
+#daily cases
+file <- file %>%
+  # group by country and states
+  group_by(county, state) %>%
+  arrange(date, .by_group = TRUE) %>%
+  # non-cumulative daily cases
+  mutate(daily_cases = cases - lag(cases, 1, default = 0))
+```
+
+```{r}
+#state daily cases
+state_daily <- file %>%
+  group_by(date, state) %>%
+  summarise(daily_new = sum(daily_cases), .groups = "drop")
+
+#look at california
+CA = subset(state_daily, state == "California")
+```
+
+
+```{r}
+CA
+```
+```{r}
+plot(CA$date, CA$daily_new, ylim = c(0, 50000))
+```
+
+
+
+
+
+
+
+
+
+
+
+
