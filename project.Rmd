@@ -28,6 +28,14 @@ tail(gold)
 ```{r}
 plot(gold$Date, gold$Price)
 ```
+```{r}
+#gold price statistics
+summary(gold$Price)
+```
+```{r}
+hist(gold$Price)
+```
+
 
 
 
