@@ -12,48 +12,22 @@ knitr::opts_chunk$set(echo = TRUE, dev="httpgd", fig.show="hold")
 ```{r}
 library(dplyr)
 ```
-
 ```{r}
-#read the data
-file = read.csv("us-counties.csv")
-``` 
-
-```{r}
-#display the data
-tail(file)
-file$date <- as.Date(file$date)
+gold <- read.csv("Gold Price.csv")
 ```
 
 ```{r}
-#daily cases
-file <- file %>%
-  # group by country and states
-  group_by(county, state) %>%
-  arrange(date, .by_group = TRUE) %>%
-  # non-cumulative daily cases
-  mutate(daily_cases = cases - lag(cases, 1, default = 0))
+gold$Date <- as.Date(gold$Date)
+gold <- gold[order(gold$Date),]
 ```
 
 ```{r}
-#state daily cases
-state_daily <- file %>%
-  group_by(date, state) %>%
-  summarise(daily_new = sum(daily_cases), .groups = "drop")
-
-#look at california
-CA = subset(state_daily, state == "California")
+tail(gold)
 ```
-
 
 ```{r}
-CA
+plot(gold$Date, gold$Price)
 ```
-```{r}
-plot(CA$date, CA$daily_new, ylim = c(0, 50000))
-```
-
-
-
 
 
 
