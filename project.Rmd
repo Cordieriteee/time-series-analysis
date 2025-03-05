@@ -25,6 +25,27 @@ gold <- gold[order(gold$Date),]
 tail(gold)
 ```
 
+Data preparation
+
+```{r}
+# check if there is missing value
+sum(is.na(gold))
+
+# detect outliers using IQR
+boxplot(gold$Price, main="Gold Price Boxplot", col="lightblue")
+
+Q1 <- quantile(gold$Price, 0.25)
+Q3 <- quantile(gold$Price, 0.75)
+IQR_value <- Q3 - Q1
+
+lower_bound <- Q1 - 1.5 * IQR_value
+upper_bound <- Q3 + 1.5 * IQR_value
+
+outliers <- gold$Price[gold$Price < lower_bound | gold$Price > upper_bound]
+print(outliers)
+
+```
+
 ```{r}
 plot(gold$Date, gold$Price)
 ```
@@ -37,6 +58,25 @@ hist(gold$Price)
 ```
 
 
+From the plot of the gold price, the plot seems not stationary because the trend of the price is increasing.
+
+Check stationary using Augmented Dickey-Fuller (ADF test):
+```{r}
+library(tseries)
+adf.test(gold$Price)
+```
+By the Augmented Dickey-Fuller Test, the p-value is greater then alpha=0.05, which means we don't have enough evidence to reject that the data is not stationary. 
+
+Make it stationary using Differencing to remove the main trend
+```{r}
+gold$diff_price <- c(NA, diff(gold$Price))
+plot(gold$Date, gold$diff_price, type="l")
+```
+
+```{r}
+adf.test(gold$diff_price[-1])
+```
+After differencing, the ADF test shows that the p-value is significantly smaller than the alpha=0.05, which means we can reject the null hypothesis, the data is stationary now. 
 
 
 
