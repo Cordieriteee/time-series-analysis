@@ -1,10 +1,3 @@
----
-title: "project"
-author: "Yuran Liao"
-date: "2025-02-27"
-output: html_document
----
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, dev="httpgd", fig.show="hold")
 ```
@@ -26,6 +19,10 @@ tail(gold)
 ```
 
 Data preparation
+```{r}
+#gold price statistics
+summary(gold$Price)
+```
 
 ```{r}
 # check if there is missing value
@@ -49,15 +46,6 @@ print(outliers)
 ```{r}
 plot(gold$Date, gold$Price)
 ```
-```{r}
-#gold price statistics
-summary(gold$Price)
-```
-```{r}
-hist(gold$Price)
-```
-
-
 From the plot of the gold price, the plot seems not stationary because the trend of the price is increasing.
 
 Check stationary using Augmented Dickey-Fuller (ADF test):
@@ -70,18 +58,26 @@ By the Augmented Dickey-Fuller Test, the p-value is greater then alpha=0.05, whi
 Make it stationary using Differencing to remove the main trend
 ```{r}
 gold$diff_price <- c(NA, diff(gold$Price))
-plot(gold$Date, gold$diff_price, type="l")
+plot(gold$Date, gold$diff_price, type="l", main = "Gold Price Fluctuations")
 ```
-
 ```{r}
 adf.test(gold$diff_price[-1])
 ```
 After differencing, the ADF test shows that the p-value is significantly smaller than the alpha=0.05, which means we can reject the null hypothesis, the data is stationary now. 
 
 
+Data Analysis
+- Initial data transformations
+```{r}
+# Check stabilize variance by using the ACF plot
+gold_ts = ts(gold$diff_price[-1])
+acf(gold_ts, main = "ACF plot of Gold Price")
+pacf(gold_ts, main = "PACF plot of Gold Price")
+```
+From the plot of ACF and PACF, there is no clear trends or fluctuations over time. The variance of time series data does not change over time and is stable. Also, by the behavior of ACF and PACF for AR, MA and ARMA processes, we observed that this might be a MA process since the ACF cuts off at some lag q and PACF tails off.
 
-
-
-
-
-
+```{r}
+# check symmetry
+hist(gold$diff_price, xlim = c(-2500, 2500), main = "Histogram of the Gold Price")
+```
+By the histogram, the data of gold price is likely normal and symmetry at 0 (mean 0).
