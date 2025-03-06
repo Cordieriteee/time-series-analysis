@@ -4,7 +4,9 @@ knitr::opts_chunk$set(echo = TRUE, dev="httpgd", fig.show="hold")
 
 ```{r}
 library(dplyr)
+library(tseries)
 ```
+
 ```{r}
 gold <- read.csv("Gold Price.csv")
 ```
@@ -50,7 +52,6 @@ From the plot of the gold price, the plot seems not stationary because the trend
 
 Check stationary using Augmented Dickey-Fuller (ADF test):
 ```{r}
-library(tseries)
 adf.test(gold$Price)
 ```
 By the Augmented Dickey-Fuller Test, the p-value is greater then alpha=0.05, which means we don't have enough evidence to reject that the data is not stationary. 
@@ -81,3 +82,9 @@ From the plot of ACF and PACF, there is no clear trends or fluctuations over tim
 hist(gold$diff_price, xlim = c(-2500, 2500), main = "Histogram of the Gold Price")
 ```
 By the histogram, the data of gold price is likely normal and symmetry at 0 (mean 0).
+
+```{r}
+arma = auto.arima()
+```
+
+
