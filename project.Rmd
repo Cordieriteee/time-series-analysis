@@ -84,6 +84,13 @@ hist(gold$diff_price, xlim = c(-2500, 2500), main = "Histogram of the Gold Price
 By the histogram, the data of gold price is likely normal and symmetry at 0 (mean 0).
 
 ```{r}
+# classical decomposition of the time series
+ts = ts(gold$diff_price[-1], start = c(2014, 1), frequency = 12)
+decom <- decompose(ts)
+print(decom)
+```
+
+```{r}
 arma = auto.arima()
 ```
 
