@@ -94,12 +94,23 @@ adf.test(gold$boxcox)
 BoxCox transformation dose not works well. However, p-value decreases from 0.9002 to 0.3328 and the right skewed trend is weakened. We choose to retain BoxCox transformation.
 
 ```{r}
+#mean trading date
+mean_days <- gold %>%
+  mutate(Year = year(Date)) %>%
+  group_by(Year) %>%
+  summarise(count = n()) %>%
+  pull(count) %>%
+  mean()
+
+mean_days = floor(mean_days)
+  
+
 #basic information
 n = nrow(gold)
 y_start = 2014
 m_start = 1
 # trading days per year
-ts = ts(gold$boxcox, start = c(y_start, m_start), frequency = 220)
+ts = ts(gold$boxcox, start = c(y_start, m_start), frequency = mean_days)
 
 #classical decomposition
 gold_decomp <- decompose(ts, type = "additive")
