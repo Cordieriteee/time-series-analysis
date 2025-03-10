@@ -164,7 +164,7 @@ acf(residuals(model1), main = "ACF of New Residuals")
 ```
 ```{r}
 pacf(residuals(model1), main = "PACF of New Residuals", lag.max = 50) 
-```
+```  
 
 ```{r}
 hist(residuals(model1))
@@ -179,7 +179,7 @@ The p-value > alpha = 0.05, which means we can not reject the H0. The residuals 
 ```{r}
 #main trend
 #model samples
-trend = gold_decomp$trend
+trend = na.omit(gold_decomp$trend)
 df_trend = data.frame(t = seq_along(trend), trend = trend)
 
 #trend fitting
@@ -189,6 +189,21 @@ trend_model = lm(trend ~ t, data = df_trend)
 summary(trend_model)
 ```
 ```{r}
+#sesasonal trend
+#model samples
+seasonal = head(gold_decomp$seasonal, mean_days)
+df_seasonal = data.frame(t = seq_along(seasonal), seasonal = seasonal)
+```
+```{r}
+#linear model
+seasonal1 = lm(seasonal ~ t, data = df_seasonal)
+summary(seasonal1)
+```
+linear model can only interpret 9% information in seasonal trend. Try higher degree polynomial.
+
+```{r}
+
+
 
 ```
 
