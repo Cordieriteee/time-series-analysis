@@ -202,11 +202,71 @@ summary(seasonal1)
 linear model can only interpret 9% information in seasonal trend. Try higher degree polynomial.
 
 ```{r}
+#polynomial model
+degrees = 2:5
+results = data.frame(degree = degrees, adj_r2 = NA)
 
+#degree 2
+model2 = lm(seasonal ~ poly(t, 2), data = df_seasonal)
 
+#adj r square
+fit_summary = summary(model2)
+adj_r2 = fit_summary$r.squared
+results$adj_r2[results$degree == 2] = adj_r2
+print(summary(model2))
 
+#degree 3
+model3 = lm(seasonal ~ poly(t, 3), data = df_seasonal)
+
+#adj r square
+fit_summary = summary(model3)
+adj_r2 = fit_summary$r.squared
+results$adj_r2[results$degree == 3] = adj_r2
+print(summary(model3))
+
+#degree 4
+model4 = lm(seasonal ~ poly(t, 4), data = df_seasonal)
+
+#adj r square
+fit_summary = summary(model4)
+adj_r2 = fit_summary$r.squared
+results$adj_r2[results$degree == 4] = adj_r2
+print(summary(model4))
+
+#degree 5
+model5 = lm(seasonal ~ poly(t, 5), data = df_seasonal)
+
+#adj r square
+fit_summary = summary(model5)
+adj_r2 = fit_summary$r.squared
+results$adj_r2[results$degree == 5] = adj_r2
+print(summary(model5))
 ```
 
+```{r}
+par(mfrow = c(1, 2))
+plot(results$degree, results$adj_r2, type = "l", ylim = c(0,1))
+plot(results$degree, results$adj_r2, type = "l", ylim = c(0.65, 0.67))
+```
+Adjustment r square value going flat after degree 4. The values of adj_r2 are very close even though there shows a big increase from degree 3 to 4. Try residual analysis.
+
+```{r}
+#residuals from polynomial models
+residuals_poly = data_frame(index = seq(length(residuals(model2))), r2 = residuals(model2), r3 = residuals(model3), r4 = residuals(model4), r5 = residuals(model5))
+
+#residual plot
+par(mfrow = c(2, 2))
+plot(x = residuals_poly$index, y = residuals_poly$r2)
+plot(x = residuals_poly$index, y = residuals_poly$r3)
+plot(x = residuals_poly$index, y = residuals_poly$r4)
+plot(x = residuals_poly$index, y = residuals_poly$r5)
+
+par(mfrow = c(2, 2))
+hist(x = residuals_poly$r2)
+hist(x = residuals_poly$r3)
+hist(x = residuals_poly$r4)
+hist(x = residuals_poly$r5)
+```
 
 
 
