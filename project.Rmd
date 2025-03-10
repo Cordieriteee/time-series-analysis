@@ -6,7 +6,7 @@ knitr::opts_chunk$set(echo = TRUE, dev="httpgd", fig.show="hold")
 library(dplyr)
 library(tseries)
 library(forecast)
-
+library(lubridate)
 ```
 
 ```{r}
@@ -83,10 +83,12 @@ Log transformation does not perform well. Try BoxCox transformation.
 lambda = BoxCox.lambda(gold$Price)
 print(paste("best lambda is:" ,lambda))
 ```
+
 ```{r}
 gold$boxcox = BoxCox(gold$Price, lambda = lambda)
 hist(gold$boxcox, main = "histogram of BoxCox transformation")
 ```
+
 ```{r}
 #adf test after boxcox transformation
 adf.test(gold$boxcox)
@@ -94,16 +96,28 @@ adf.test(gold$boxcox)
 BoxCox transformation dose not works well. However, p-value decreases from 0.9002 to 0.3328 and the right skewed trend is weakened. We choose to retain BoxCox transformation.
 
 ```{r}
+#mean trading date
+mean_days <- gold %>%
+  mutate(Year = year(Date)) %>%
+  group_by(Year) %>%
+  summarise(count = n()) %>%
+  pull(count) %>%
+  mean()
+
+mean_days = floor(mean_days)
+  
+
 #basic information
 n = nrow(gold)
 y_start = 2014
 m_start = 1
 # trading days per year
-ts = ts(gold$boxcox, start = c(y_start, m_start), frequency = 220)
+ts = ts(gold$boxcox, start = c(y_start, m_start), frequency = mean_days)
 
 #classical decomposition
 gold_decomp <- decompose(ts, type = "additive")
 plot(gold_decomp$trend)
+
 ```
 ```{r}
 # seasonality analysis per year
@@ -136,9 +150,53 @@ The sample ACF plot shows that there are many lags exceed the blue dotted line, 
 ```{r}
 # check residuals using another test (Ljung-Box Test)
 # H0: the residuals are white noise (no autocorrelation)
-Box.test(residuals, lag = 20, type = "Ljung-Box")
+Box.test(residuals, type = "Ljung-Box")
 ```
 The p-value < alpha = 0.05, which means we have strong evidence to reject the H0, the residuals have autocorrelation and the model does not adequately capture the trend of the data. So we are going to fit a ARMA model.
+
+```{r}
+#arma model 
+model1 = auto.arima(residuals, ic = "aic", stationary = TRUE)
+summary(model1)
+```
+```{r}
+acf(residuals(model1), main = "ACF of New Residuals") 
+```
+```{r}
+pacf(residuals(model1), main = "PACF of New Residuals", lag.max = 50) 
+```
+
+```{r}
+hist(residuals(model1))
+```
+```{r}
+# check residuals using another test (Ljung-Box Test)
+# H0: the residuals are white noise (no autocorrelation)
+Box.test(residuals(model1), type = "Ljung-Box")
+```
+The p-value > alpha = 0.05, which means we can not reject the H0. The residuals have no autocorrelation and the model can capture the trend of the data.
+
+```{r}
+#main trend
+#model samples
+trend = gold_decomp$trend
+df_trend = data.frame(t = seq_along(trend), trend = trend)
+
+#trend fitting
+trend_model = lm(trend ~ t, data = df_trend)
+
+#model summary
+summary(trend_model)
+```
+```{r}
+
+```
+
+
+
+
+
+
 
 
 
