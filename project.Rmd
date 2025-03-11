@@ -330,6 +330,7 @@ n = nrow(df_trend) #number of observation we have
 predict = (n + 1) : (n + h) #index for prediction
 
 trend_pred = predict(trend_model, newdata = data.frame(t = predict))
+trend_pred = trend_pred
 ```
 
 ```{r}
@@ -355,6 +356,7 @@ for (k in 1:K) {
 }
 
 seasonal_pred = predict(fr_model[[6]], newdata = fr)
+seasonal_pred = seasonal_pred
 ```
 
 ```{r}
@@ -373,11 +375,11 @@ rough_pred = forecast(model1, h = 125)
 
 ```{r}
 #plot rough 
-point_forecast = as.numeric(rough_pred$mean)       
-lower_80 = rough_pred$lower[,1]             
-upper_80 = rough_pred$upper[,1]             
-lower_95 = rough_pred$lower[,2]             
-upper_95 = rough_pred$upper[,2]    
+point_forecast = as.numeric(rough_pred$mean)     
+lower_80 = rough_pred$lower[,1]   
+upper_80 = rough_pred$upper[,1]          
+lower_95 = rough_pred$lower[,2]            
+upper_95 = rough_pred$upper[,2]   
 
 plot(1:125, point_forecast, type="l",
      ylim = range(lower_95, upper_95),
@@ -405,9 +407,12 @@ legend("bottomleft",
 ```
 
 ```{r}
-final_pred <- trend_pred + seasonal_pred + point_forecast
+#final prediction
+final_pred <- InvBoxCox(trend_pred + seasonal_pred + point_forecast, lambda)
 plot(final_pred, type="l", main = "final 125 days prediction", ylab = "prediction", xlab = "days after data ends")
 ```
-
+```{r}
+tail(final_pred)
+```
 
 
