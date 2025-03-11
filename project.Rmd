@@ -194,6 +194,7 @@ summary(trend_model)
 seasonal = head(gold_decomp$seasonal, mean_days)
 df_seasonal = data.frame(t = seq_along(seasonal), seasonal = seasonal)
 ```
+
 ```{r}
 #linear model
 seasonal1 = lm(seasonal ~ t, data = df_seasonal)
@@ -211,7 +212,7 @@ model2 = lm(seasonal ~ poly(t, 2), data = df_seasonal)
 
 #adj r square
 fit_summary = summary(model2)
-adj_r2 = fit_summary$r.squared
+adj_r2 = fit_summary$adj.r.squared
 results$adj_r2[results$degree == 2] = adj_r2
 print(summary(model2))
 
@@ -220,7 +221,7 @@ model3 = lm(seasonal ~ poly(t, 3), data = df_seasonal)
 
 #adj r square
 fit_summary = summary(model3)
-adj_r2 = fit_summary$r.squared
+adj_r2 = fit_summary$adj.r.squared
 results$adj_r2[results$degree == 3] = adj_r2
 print(summary(model3))
 
@@ -229,7 +230,7 @@ model4 = lm(seasonal ~ poly(t, 4), data = df_seasonal)
 
 #adj r square
 fit_summary = summary(model4)
-adj_r2 = fit_summary$r.squared
+adj_r2 = fit_summary$adj.r.squared
 results$adj_r2[results$degree == 4] = adj_r2
 print(summary(model4))
 
@@ -238,15 +239,15 @@ model5 = lm(seasonal ~ poly(t, 5), data = df_seasonal)
 
 #adj r square
 fit_summary = summary(model5)
-adj_r2 = fit_summary$r.squared
+adj_r2 = fit_summary$adj.r.squared
 results$adj_r2[results$degree == 5] = adj_r2
 print(summary(model5))
+
+
 ```
 
 ```{r}
-par(mfrow = c(1, 2))
 plot(results$degree, results$adj_r2, type = "l", ylim = c(0,1))
-plot(results$degree, results$adj_r2, type = "l", ylim = c(0.65, 0.67))
 ```
 Adjustment r square value going flat after degree 4. The values of adj_r2 are very close even though there shows a big increase from degree 3 to 4. Try residual analysis.
 
@@ -266,6 +267,48 @@ hist(x = residuals_poly$r2)
 hist(x = residuals_poly$r3)
 hist(x = residuals_poly$r4)
 hist(x = residuals_poly$r5)
+```
+polynomial perform badly. Try fourier algorithm
+
+```{r}
+#fourier algorithm
+P = 255
+K = 2:9
+r2_fr = data.frame(K = K, adj_r2 = NA)
+
+#iterate from K = 2 to 9, save 
+for (K in K) {
+  #generate fourier term
+  for (k in 1:K) {
+    sin_col = paste0("sin", k)
+    cos_col = paste0("cos", k)
+    
+    df_seasonal[[sin_col]] <- sin(2*pi * k * df_seasonal$t / P)
+    df_seasonal[[cos_col]] <- cos(2*pi * k * df_seasonal$t / P)
+  }
+  
+  vars = c()
+  for (k in 1:K) {
+    vars = c(vars, paste0("sin", k), paste0("cos", k))
+  }
+  
+  fmla = as.formula(
+    paste("seasonal ~", paste(vars, collapse = " + "))
+  )
+  
+  #fit formula
+  fit_fourier = lm(fmla, data = df_seasonal)
+  r2 = summary(fit_fourier)$adj.r.squared
+  r2_fr$adj_r2[r2_fr$K == K] <- r2
+}
+
+r2_fr
+```
+```{r}
+#plot adj r2
+par(mfrow = c(1, 2))
+plot(r2_fr$K, r2_fr$adj_r2, type = "l", ylim = c(0, 1))
+plot(r2_fr$K, r2_fr$adj_r2, type = "l")
 ```
 
 
