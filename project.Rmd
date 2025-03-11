@@ -409,7 +409,7 @@ legend("bottomleft",
 ```{r}
 #final prediction
 final_pred <- InvBoxCox(trend_pred + seasonal_pred + point_forecast, lambda)
-plot(final_pred, type="l", main = "final 125 days prediction", ylab = "prediction", xlab = "days after data ends")
+plot(final_pred, type="l", main = "final 125 days prediction", ylab = "price", xlab = "days after data ends")
 ```
 ```{r}
 tail(final_pred)
