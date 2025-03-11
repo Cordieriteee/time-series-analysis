@@ -19,7 +19,7 @@ gold <- gold[order(gold$Date),]
 ```
 
 ```{r}
-head(gold)
+tail(gold)
 ```
 
 Data preparation
@@ -276,6 +276,8 @@ P = 255
 K = 2:9
 r2_fr = data.frame(K = K, adj_r2 = NA)
 
+fr_model = list()
+
 #iterate from K = 2 to 9, save 
 for (K in K) {
   #generate fourier term
@@ -299,7 +301,9 @@ for (K in K) {
   #fit formula
   fit_fourier = lm(fmla, data = df_seasonal)
   r2 = summary(fit_fourier)$adj.r.squared
-  r2_fr$adj_r2[r2_fr$K == K] <- r2
+  r2_fr$adj_r2[r2_fr$K == K] = r2
+  
+  fr_model[[paste0("K_", K)]] = fit_fourier
 }
 
 r2_fr
@@ -311,9 +315,56 @@ plot(r2_fr$K, r2_fr$adj_r2, type = "l", ylim = c(0, 1))
 plot(r2_fr$K, r2_fr$adj_r2, type = "l")
 ```
 
+```{r}
+#rough component
+random = gold_decomp$random
+random = na.omit(random)
+```
+```{r}
+#125 days prediction, from 11/6/2024 (data end date) to 3/11/2025 (date doing prediction)
+h = 125
 
+#main trend prediction
+n = nrow(df_trend) #number of observation we have
 
+predict = (n + 1) : (n + h) #index for prediction
 
+trend_pred = predict(trend_model, newdata = data.frame(t = predict))
+```
+
+```{r}
+#main trend prediction plot
+plot(x = 1:125, y = trend_pred, type = "l", main = "main trend 125 days prediction", ylab = "price", xlab = "days after data ends")
+```
+
+```{r}
+#seasonal trend prediction
+n = nrow(df_seasonal) #number of observation we have
+
+K = 7
+
+fr = data.frame(t = predict)
+
+#generate fourier term
+for (k in 1:K) {
+  sin_col = paste0("sin", k)
+  cos_col = paste0("cos", k)
+  
+  fr[[sin_col]] <- sin(2*pi * k * fr$t / P)
+  fr[[cos_col]] <- cos(2*pi * k * fr$t / P)
+}
+
+seasonal_pred = predict(fr_model[[6]], newdata = fr)
+```
+
+```{r}
+plot(x = 1:125, y = seasonal_pred, type = "l", main = "seasonal trend 125 days prediction", ylab = "price", xlab = "days after data ends")
+```
+```{r}
+#smooth component prediction
+smooth = trend_pred + seasonal_pred
+plot(x = 1:125, y = smooth, type = "l", main = "smooth component 125 days prediction", ylab = "price", xlab = "days after data ends")
+```
 
 
 
