@@ -358,15 +358,56 @@ seasonal_pred = predict(fr_model[[6]], newdata = fr)
 ```
 
 ```{r}
+#plot seasonal prediction
 plot(x = 1:125, y = seasonal_pred, type = "l", main = "seasonal trend 125 days prediction", ylab = "price", xlab = "days after data ends")
 ```
 ```{r}
 #smooth component prediction
 smooth = trend_pred + seasonal_pred
-plot(x = 1:125, y = smooth, type = "l", main = "smooth component 125 days prediction", ylab = "price", xlab = "days after data ends")
+plot(x = 1:125, y = smooth, type = "l", main = "smooth component 125 days prediction", ylab = "prediction", xlab = "days after data ends")
+```
+```{r}
+#rough component prediction
+rough_pred = forecast(model1, h = 125)
 ```
 
+```{r}
+#plot rough 
+point_forecast = as.numeric(rough_pred$mean)       
+lower_80 = rough_pred$lower[,1]             
+upper_80 = rough_pred$upper[,1]             
+lower_95 = rough_pred$lower[,2]             
+upper_95 = rough_pred$upper[,2]    
 
+plot(1:125, point_forecast, type="l",
+     ylim = range(lower_95, upper_95),
+     xlab = "days after data ends",
+     ylab = "Forecast",
+     main = "rough component 125 days prediction", 
+     )
+
+#confidence interval
+lines(1:125, lower_80, col="blue", lty=2)
+lines(1:125, upper_80, col="blue", lty=2)
+lines(1:125, lower_95, col="red",  lty=2)
+lines(1:125, upper_95, col="red",  lty=2)
+
+legend("bottomleft",
+       c("Mean Forecast", "95% CI", "80% CI"),
+       col = c("black", "red", "blue"),
+       lty = c(1, 2, 2),
+       lwd = c(2, 1, 1),
+       bty="n", 
+       border=NA,
+       cex=0.75)
+
+
+```
+
+```{r}
+final_pred <- trend_pred + seasonal_pred + point_forecast
+plot(final_pred, type="l", main = "final 125 days prediction", ylab = "prediction", xlab = "days after data ends")
+```
 
 
 
