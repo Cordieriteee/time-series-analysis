@@ -33,7 +33,7 @@ summary(gold$Price)
 sum(is.na(gold))
 
 # detect outliers using IQR
-boxplot(gold$Price, main="Gold Price Boxplot", col="lightblue")
+boxplot(gold$Price, main="Gold Price Boxplot", col="lightblue", ylab = "price")
 
 Q1 <- quantile(gold$Price, 0.25)
 Q3 <- quantile(gold$Price, 0.75)
@@ -48,7 +48,7 @@ print(outliers)
 ```
 
 ```{r}
-plot(gold$Date, gold$Price)
+plot(gold$Date, gold$Price, ylab = "price", xlab = "date")
 ```
 From the plot of the gold price, the plot seems not stationary because the trend of the price is increasing.
 
@@ -86,7 +86,7 @@ print(paste("best lambda is:" ,lambda))
 
 ```{r}
 gold$boxcox = BoxCox(gold$Price, lambda = lambda)
-hist(gold$boxcox, main = "histogram of BoxCox transformation")
+hist(gold$boxcox, main = "histogram of BoxCox transformation", xlab = "gold price after boxcox transformation")
 ```
 
 ```{r}
@@ -116,16 +116,16 @@ ts = ts(gold$boxcox, start = c(y_start, m_start), frequency = mean_days)
 
 #classical decomposition
 gold_decomp <- decompose(ts, type = "additive")
-plot(gold_decomp$trend)
+plot(gold_decomp$trend, main = "main trend", ylab = "price after boxcox transformation")
 
 ```
 ```{r}
 # seasonality analysis per year
-plot(gold_decomp$seasonal)
+plot(gold_decomp$seasonal, main = "seasonal trend", ylab = "price after boxcox transformation")
 ```
 ```{r}
 # stationary error
-plot(gold_decomp$random)
+plot(gold_decomp$random, main = "stationary error", ylab = "price after boxcox transformation")
 ```
 ```{r}
 #adf test after classical decomposition
@@ -247,7 +247,9 @@ print(summary(model5))
 ```
 
 ```{r}
-plot(results$degree, results$adj_r2, type = "l", ylim = c(0,1))
+par(mfrow = c(1, 2))
+plot(results$degree, results$adj_r2, type = "l", ylim = c(0,1), xlab = "degree", ylab = "adjusted r^2", main = "adjusted r^2")
+plot(results$degree, results$adj_r2, type = "l", xlab = "degree", ylab = "adjusted r^2", main = "adjusted r^2 (zoom in)", ylim = c(0.64, 0.67))
 ```
 Adjustment r square value going flat after degree 4. The values of adj_r2 are very close even though there shows a big increase from degree 3 to 4. Try residual analysis.
 
@@ -257,16 +259,16 @@ residuals_poly = data_frame(index = seq(length(residuals(model2))), r2 = residua
 
 #residual plot
 par(mfrow = c(2, 2))
-plot(x = residuals_poly$index, y = residuals_poly$r2)
-plot(x = residuals_poly$index, y = residuals_poly$r3)
-plot(x = residuals_poly$index, y = residuals_poly$r4)
-plot(x = residuals_poly$index, y = residuals_poly$r5)
+plot(x = residuals_poly$index, y = residuals_poly$r2, main = "residual plot (degree 2)", xlab = "index", ylab = "residual")
+plot(x = residuals_poly$index, y = residuals_poly$r3, main = "residual plot (degree 3)", xlab = "index", ylab = "residual")
+plot(x = residuals_poly$index, y = residuals_poly$r4, main = "residual plot (degree 4)", xlab = "index", ylab = "residual")
+plot(x = residuals_poly$index, y = residuals_poly$r5, main = "residual plot (degree 5)", xlab = "index", ylab = "residual")
 
 par(mfrow = c(2, 2))
-hist(x = residuals_poly$r2)
-hist(x = residuals_poly$r3)
-hist(x = residuals_poly$r4)
-hist(x = residuals_poly$r5)
+hist(x = residuals_poly$r2, main = "residual histogram (degree 2)", xlab = "residuals")
+hist(x = residuals_poly$r3, main = "residual histogram (degree 3)", xlab = "residuals")
+hist(x = residuals_poly$r4, main = "residual histogram (degree 4)", xlab = "residuals")
+hist(x = residuals_poly$r5, main = "residual histogram (degree 5)", xlab = "residuals")
 ```
 polynomial perform badly. Try fourier algorithm
 
@@ -305,14 +307,12 @@ for (K in K) {
   
   fr_model[[paste0("K_", K)]] = fit_fourier
 }
-
-r2_fr
 ```
 ```{r}
 #plot adj r2
 par(mfrow = c(1, 2))
-plot(r2_fr$K, r2_fr$adj_r2, type = "l", ylim = c(0, 1))
-plot(r2_fr$K, r2_fr$adj_r2, type = "l")
+plot(r2_fr$K, r2_fr$adj_r2, type = "l", ylim = c(0, 1), main = "adjusted r^2", ylab = "adjusted r^2", xlab ="K")
+plot(r2_fr$K, r2_fr$adj_r2, type = "l", main = "adjusted r^2 (zoom in)", ylab = "adjusted r^2", xlab ="K")
 ```
 
 ```{r}
@@ -320,6 +320,7 @@ plot(r2_fr$K, r2_fr$adj_r2, type = "l")
 random = gold_decomp$random
 random = na.omit(random)
 ```
+
 ```{r}
 #125 days prediction, from 11/6/2024 (data end date) to 3/11/2025 (date doing prediction)
 h = 125
@@ -335,7 +336,7 @@ trend_pred = trend_pred
 
 ```{r}
 #main trend prediction plot
-plot(x = 1:125, y = trend_pred, type = "l", main = "main trend 125 days prediction", ylab = "price", xlab = "days after data ends")
+plot(x = 1:125, y = InvBoxCox(trend_pred, lambda), type = "l", main = "main trend 125 days prediction", ylab = "price", xlab = "days after data ends")
 ```
 
 ```{r}
@@ -361,12 +362,12 @@ seasonal_pred = seasonal_pred
 
 ```{r}
 #plot seasonal prediction
-plot(x = 1:125, y = seasonal_pred, type = "l", main = "seasonal trend 125 days prediction", ylab = "price", xlab = "days after data ends")
+plot(x = 1:125, y = InvBoxCox(seasonal_pred, lambda), type = "l", main = "seasonal trend 125 days prediction", ylab = "price", xlab = "days after data ends")
 ```
 ```{r}
 #smooth component prediction
 smooth = trend_pred + seasonal_pred
-plot(x = 1:125, y = smooth, type = "l", main = "smooth component 125 days prediction", ylab = "prediction", xlab = "days after data ends")
+plot(x = 1:125, y = InvBoxCox(smooth, lambda = lambda), type = "l", main = "smooth component 125 days prediction", ylab = "price", xlab = "days after data ends")
 ```
 ```{r}
 #rough component prediction
@@ -375,11 +376,11 @@ rough_pred = forecast(model1, h = 125)
 
 ```{r}
 #plot rough 
-point_forecast = as.numeric(rough_pred$mean)     
-lower_80 = rough_pred$lower[,1]   
-upper_80 = rough_pred$upper[,1]          
-lower_95 = rough_pred$lower[,2]            
-upper_95 = rough_pred$upper[,2]   
+point_forecast = InvBoxCox(as.numeric(rough_pred$mean), lambda = lambda)     
+lower_80 = InvBoxCox(rough_pred$lower[,1], lambda = lambda) 
+upper_80 = InvBoxCox(rough_pred$upper[,1], lambda = lambda)           
+lower_95 = InvBoxCox(rough_pred$lower[,2], lambda = lambda)             
+upper_95 = InvBoxCox(rough_pred$upper[,2], lambda = lambda)    
 
 plot(1:125, point_forecast, type="l",
      ylim = range(lower_95, upper_95),
