@@ -376,13 +376,13 @@ rough_pred = forecast(model1, h = 125)
 
 ```{r}
 #plot rough 
-point_forecast = InvBoxCox(as.numeric(rough_pred$mean), lambda = lambda)     
+point_forecast = as.numeric(rough_pred$mean)     
 lower_80 = InvBoxCox(rough_pred$lower[,1], lambda = lambda) 
 upper_80 = InvBoxCox(rough_pred$upper[,1], lambda = lambda)           
 lower_95 = InvBoxCox(rough_pred$lower[,2], lambda = lambda)             
 upper_95 = InvBoxCox(rough_pred$upper[,2], lambda = lambda)    
 
-plot(1:125, point_forecast, type="l",
+plot(1:125, InvBoxCox(point_forecast,lambda = lambda), type="l",
      ylim = range(lower_95, upper_95),
      xlab = "days after data ends",
      ylab = "Forecast",
