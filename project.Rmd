@@ -322,8 +322,8 @@ random = na.omit(random)
 ```
 
 ```{r}
-#125 days prediction, from 11/6/2024 (data end date) to 3/11/2025 (date doing prediction)
-h = 125
+#255 days prediction, from 11/6/2024 (data end date) to 3/11/2025 (date doing prediction)
+h = 255
 
 #main trend prediction
 n = nrow(df_trend) #number of observation we have
@@ -336,7 +336,7 @@ trend_pred = trend_pred
 
 ```{r}
 #main trend prediction plot
-plot(x = 1:125, y = InvBoxCox(trend_pred, lambda), type = "l", main = "main trend 125 days prediction", ylab = "price", xlab = "days after data ends")
+plot(x = 1:255, y = InvBoxCox(trend_pred, lambda), type = "l", main = "main trend 255 days prediction", ylab = "price", xlab = "days after data ends")
 ```
 
 ```{r}
@@ -362,16 +362,16 @@ seasonal_pred = seasonal_pred
 
 ```{r}
 #plot seasonal prediction
-plot(x = 1:125, y = InvBoxCox(seasonal_pred, lambda), type = "l", main = "seasonal trend 125 days prediction", ylab = "price", xlab = "days after data ends")
+plot(x = 1:255, y = InvBoxCox(seasonal_pred, lambda), type = "l", main = "seasonal trend 255 days prediction", ylab = "price", xlab = "days after data ends")
 ```
 ```{r}
 #smooth component prediction
 smooth = trend_pred + seasonal_pred
-plot(x = 1:125, y = InvBoxCox(smooth, lambda = lambda), type = "l", main = "smooth component 125 days prediction", ylab = "price", xlab = "days after data ends")
+plot(x = 1:255, y = InvBoxCox(smooth, lambda = lambda), type = "l", main = "smooth component 255 days prediction", ylab = "price", xlab = "days after data ends")
 ```
 ```{r}
 #rough component prediction
-rough_pred = forecast(model1, h = 125)
+rough_pred = forecast(model1, h = 255)
 ```
 
 ```{r}
@@ -382,18 +382,18 @@ upper_80 = InvBoxCox(rough_pred$upper[,1], lambda = lambda)
 lower_95 = InvBoxCox(rough_pred$lower[,2], lambda = lambda)             
 upper_95 = InvBoxCox(rough_pred$upper[,2], lambda = lambda)    
 
-plot(1:125, InvBoxCox(point_forecast,lambda = lambda), type="l",
+plot(1:255, InvBoxCox(point_forecast,lambda = lambda), type="l",
      ylim = range(lower_95, upper_95),
      xlab = "days after data ends",
      ylab = "Forecast",
-     main = "rough component 125 days prediction", 
+     main = "rough component 255 days prediction", 
      )
 
 #confidence interval
-lines(1:125, lower_80, col="blue", lty=2)
-lines(1:125, upper_80, col="blue", lty=2)
-lines(1:125, lower_95, col="red",  lty=2)
-lines(1:125, upper_95, col="red",  lty=2)
+lines(1:255, lower_80, col="blue", lty=2)
+lines(1:255, upper_80, col="blue", lty=2)
+lines(1:255, lower_95, col="red",  lty=2)
+lines(1:255, upper_95, col="red",  lty=2)
 
 legend("bottomleft",
        c("Mean Forecast", "95% CI", "80% CI"),
@@ -410,10 +410,15 @@ legend("bottomleft",
 ```{r}
 #final prediction
 final_pred <- InvBoxCox(trend_pred + seasonal_pred + point_forecast, lambda)
-plot(final_pred, type="l", main = "final 125 days prediction", ylab = "price", xlab = "days after data ends")
+plot(final_pred, type="l", main = "final 255 days prediction", ylab = "price", xlab = "days after data ends")
 ```
 ```{r}
 tail(final_pred)
+```
+```{r}
+par(mfrow = c(1, 2))
+plot(gold$Date, gold$Price, ylab = "price", xlab = "date", type = "l", ylim = c(0, 90000))
+plot(final_pred, type="l", main = "final 255 days prediction", xlab = "days after data ends", ylim = c(0, 90000))
 ```
 
 
