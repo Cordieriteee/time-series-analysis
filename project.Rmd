@@ -163,7 +163,7 @@ summary(model1)
 acf(residuals(model1), main = "ACF of New Residuals") 
 ```
 ```{r}
-pacf(residuals(model1), main = "PACF of New Residuals", lag.max = 50) 
+pacf(residuals(model1), main = "PACF of New Residuals", lag.max = 200) 
 ```  
 
 ```{r}
@@ -245,6 +245,12 @@ print(summary(model5))
 
 
 ```
+```{r}
+df_lin <- data.frame(degree = 1, adj_r2 = summary(seasonal1)$adj.r.squared)
+results <- rbind(df_lin, results)
+results
+```
+
 
 ```{r}
 par(mfrow = c(1, 2))
@@ -417,7 +423,7 @@ tail(final_pred)
 ```
 ```{r}
 par(mfrow = c(1, 2))
-plot(gold$Date, gold$Price, ylab = "price", xlab = "date", type = "l", ylim = c(0, 90000))
+plot(gold$Date, gold$Price, ylab = "price", xlab = "date", type = "l", ylim = c(0, 90000), main = "recorded gold price")
 plot(final_pred, type="l", main = "final 255 days prediction", xlab = "days after data ends", ylim = c(0, 90000))
 ```
 
